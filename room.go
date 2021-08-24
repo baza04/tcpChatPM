@@ -4,5 +4,5 @@ import "net"
 
 type room struct {
 	name    string
-	members map[net.Conn]*client
+	members map[net.Addr]*client
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 )
@@ -17,6 +18,25 @@ func newServer() *server {
 	}
 }
 
+func (s *server) run() {
+	for cmd := range s.commands {
+		switch cmd.id {
+		default:
+			fmt.Println("ERROR: unexpected commandID:", cmd.id)
+		case CMD_NICK:
+			s.nick(cmd.client, cmd.args)
+		case CMD_JOIN:
+			s.join(cmd.client, cmd.args)
+		case CMD_ROOMS:
+			s.listRooms(cmd.client, cmd.args)
+		case CMD_MSG:
+			s.msg(cmd.client, cmd.args)
+		case CMD_QUIT:
+			s.quit(cmd.client, cmd.args)
+		}
+	}
+}
+
 func (s *server) newClient(conn net.Conn) {
 	log.Printf("new client has connected: %s", conn.RemoteAddr().String())
 
@@ -27,4 +47,36 @@ func (s *server) newClient(conn net.Conn) {
 	}
 
 	c.readInput()
+}
+
+func (s *server) nick(c *client, args []string) {
+	c.nick = args[1]
+	c.writeMsg(fmt.Sprintf("Ok, I will call you as %s\n", args[1]))
+}
+
+func (s *server) join(c *client, args []string) {
+	roomName := args[1]
+
+	r, ok := s.rooms[roomName]
+	if !ok {
+		r = &room{
+			name:    roomName,
+			members: make(map[net.Addr]*client),
+		}
+		s.rooms[roomName] = r
+	}
+	r.members[c.conn.RemoteAddr()] = c
+	c.room = r
+}
+
+func (s *server) listRooms(c *client, args []string) {
+
+}
+
+func (s *server) msg(c *client, args []string) {
+
+}
+
+func (s *server) quit(c *client, args []string) {
+
 }
