@@ -9,6 +9,7 @@ import (
 func main() {
 	port := flag.String("port", "8080", "custom port to tcp chat")
 	flag.Parse()
+
 	s := newServer()
 	go s.run()
 
